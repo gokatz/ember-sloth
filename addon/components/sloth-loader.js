@@ -26,7 +26,7 @@ export default Component.extend({
       return value;
     },
     get() {
-      let entireData = this.get('model');
+      let entireData = this.get('data');
       let loadCount = this.get('loadCount');
       let initialDataCount = this.get('initialDataCount');
       let newDataList = entireData.slice(0, (loadCount + (initialDataCount - loadCount)));
@@ -37,7 +37,7 @@ export default Component.extend({
   actions: {
     loadMoreData() {
       let counter = this.get('counter');
-      let entireData = this.get('model');
+      let entireData = this.get('data');
       let loadCount = this.get('loadCount');
       let newDataSet;
       let view = document.getElementById('scrollView');
