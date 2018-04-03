@@ -1,17 +1,17 @@
 {
   "name": "ember-sloth",
-  "version": "0.0.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "version": "0.0.1",
+  "description": "Synchronous lazy loader to load big list any or kind of that! In Ember Land",
   "keywords": [
     "ember-addon"
   ],
   "license": "MIT",
-  "author": "",
+  "author": "@_gokatz",
   "directories": {
     "doc": "doc",
     "test": "tests"
   },
-  "repository": "",
+  "repository": "https://github.com/gokatz/ember-sloth",
   "scripts": {
     "build": "ember build",
     "start": "ember server",
