@@ -1,0 +1,1 @@
+export { default } from 'ember-sloth/components/sloth-loader';
