@@ -3,7 +3,7 @@
 	<img src ="https://image.ibb.co/bOPGzx/105ee17e0ae8112ecfcff00d9e967b29.jpg" width="20%"  />
 </div>
 
-Sloth will help you to load a huge list (or any kind of that) lazily on scrolling into the list. Perfectly lightweight - [130B Min + GZip](https://bundlephobia.com/result?p=ember-sloth@0.0.1)
+Sloth will help you to load a huge list (or any kind of that) lazily on scrolling into the list. Perfectly lightweight - [130B Min + GZip](https://bundlephobia.com/result?p=ember-sloth@0.0.2)
 
 ## Why Sloth?
 
