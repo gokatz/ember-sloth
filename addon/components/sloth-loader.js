@@ -9,24 +9,29 @@ export default Component.extend({
   loadCount: 10,
   initialDataCount: 20,
   handleScroll: true,
+  containerId: 'slothScroll',
 
   init() {
     this._super(...arguments);
     if (this.get('tagName') && !this.get('handleScroll')) {
-      this.set('elementId', 'slothScroll');
+      this.set('elementId', this.get('containerId'));
     }
+  },
+
+  _getScrollView() {
+    return document.getElementById(this.get('containerId'));
   },
 
   didInsertElement() {
     this._super(...arguments);
-    let view = document.getElementById('slothScroll');
+    let view = this._getScrollView();
     $(view).on('scroll', this.checkScrollStatus.bind(this));
     //view.addEventListener('scroll', this.checkScrollStatus.bind(this));
   },
 
   didRender() {
     this._super(...arguments);
-    let view = document.getElementById('slothScroll');
+    let view = this._getScrollView();
     if (this.get('dataForCurrentView').length === this.get('data').length) {
       $(view).off('scroll');
       return;
@@ -34,8 +39,8 @@ export default Component.extend({
     $(view).on('scroll', this.checkScrollStatus.bind(this));
   },
   checkScrollStatus() {
-    let view = document.getElementById('slothScroll');
-    if (view.scrollTop > (view.scrollHeight / 3) * 2) {
+    let view = this._getScrollView();    
+    if (view.scrollTop > view.scrollHeight * (this.get('threshold') / 100)) {
       this.send('loadMoreData');
     }
   },
@@ -54,10 +59,12 @@ export default Component.extend({
 
   actions: {
     loadMoreData() {
+      console.log('Data loaded');
+      
       let counter = this.get('counter');
       let entireData = this.get('data');
       let loadCount = this.get('loadCount');
-      let view = document.getElementById('slothScroll');
+      let view = this._getScrollView();
       let newDataSet;
       // console.log(loadCount * (counter + 1));
       newDataSet = entireData.slice(0, loadCount * (counter + 1));

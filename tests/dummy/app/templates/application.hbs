@@ -1,5 +1,29 @@
-{{!-- The following component displays Ember's default welcome message. --}}
-{{welcome-page}}
-{{!-- Feel free to remove this! --}}
+{{!-- {{#sloth-loader data=model initialDataCount=50 loadCount=10 id="slothScroll" class="post-container" as |sloth|}}
+  {{sloth.dataForCurrentView.lnegth}}
+  {{#each sloth.dataForCurrentView as |post|}}
 
-{{outlet}}
+  {{/each}}
+{{/sloth-loader}} --}}
+
+{{#sloth-loader tagName="" data=model initialDataCount=50 threshold=70 loadCount=20 as |sloth|}}
+  <div id="slothScroll" class="post-container"> {{!-- container --}}
+    {{#each sloth.dataForCurrentView as |post|}}
+      <p class="list">
+        * {{post.name}}
+      </p>
+    {{/each}}
+  </div>
+{{/sloth-loader}}
+
+<style>
+  .post-container {
+    height: 400px;
+    overflow: auto;
+  }
+  .list:nth-child(odd) {
+    background: red;
+  }
+  .list:nth-child(even) {
+    background: green;
+  }
+</style>
