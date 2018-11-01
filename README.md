@@ -4,10 +4,10 @@
 </div>
 
 Sloth will help you to load a huge list lazily. You can lazy load your data using either of the below technique
-  * By listening scroll event inside list. 
-  * By using background tasks. (using `window.requestIdleCallback` and fallback to `setTimeout`)
+  * [By listening scroll event inside list.](#on-scroll-into-the-list)
+  * [By using background tasks.](#background-tasks) (using `window.requestIdleCallback` and fallback to `setTimeout`)
 
-Perfectly lightweight - [130B Min + GZip](https://bundlephobia.com/result?p=ember-sloth@0.0.2)
+Perfectly lightweight - [130B Min + GZip](https://bundlephobia.com/result?p=ember-sloth@0.0.2). Play around with the [demo](https://ember-sloth.netlify.com/)
 
 ## Why Sloth?
 
@@ -51,7 +51,7 @@ Since Sloth will watch the scroll event on a list container to lazy load the dat
 }
 ```
 
-**NOTE:** If your data should be load highly on demand (on scroll) like a facebook feed. This option will be the apt one. If you don't have a specific use case and the only requirement is to defer the loading of a bulk list to avoid janky pages, **you should definitely try the [background task](#Background) method** as it won't need any extra work from the host application side. 
+**NOTE:** If your data should be load highly on demand (on scroll) like a facebook feed. This option will be the apt one. If you don't have a specific use case and the only requirement is to defer the loading of a bulk list to avoid janky pages, **you should definitely try the [background task](#background-tasks) method** as it won't need any extra work from the host application side. 
 
 ### Background Tasks
 
