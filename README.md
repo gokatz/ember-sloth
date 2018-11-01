@@ -1,9 +1,13 @@
 # ember-sloth
 <div style="text-align:center">
-	<img src ="https://image.ibb.co/bOPGzx/105ee17e0ae8112ecfcff00d9e967b29.jpg" width="20%"  />
+  <img src ="https://image.ibb.co/bOPGzx/105ee17e0ae8112ecfcff00d9e967b29.jpg" width="20%"  />
 </div>
 
-Sloth will help you to load a huge list (or any kind of that) lazily on scrolling into the list. Perfectly lightweight - [130B Min + GZip](https://bundlephobia.com/result?p=ember-sloth@0.0.2)
+Sloth will help you to load a huge list lazily. You can lazy load your data using either of the below technique
+  * By listening scroll event inside list. 
+  * By using background tasks. (using `window.requestIdleCallback` and fallback to `setTimeout`)
+
+Perfectly lightweight - [130B Min + GZip](https://bundlephobia.com/result?p=ember-sloth@0.0.2)
 
 ## Why Sloth?
 
@@ -13,32 +17,71 @@ Sloth is meant for his slowness. Is that the reason? No, the reason is, we are g
 
 Sloth will give you a property `dataForCurrentView` to loop over the passed data. Since Ember 🐹 will do the heavy weight-lifting for us by efficiently loading the list using `each` helper, you can relax and sit back!
 
-Additionaly you can pass `loadCount` and `initialDataCount` to customize the intial load.
+Additionally, you can pass `loadCount` and `initialDataCount` to customize the initial load.
 
-* **initialDataCount :** How many items should Sloth render on initail load. Defaults to `20`
-* **loadCount :** How may item Sloth should load on reaching the threshold (2/3 of the current list length). Defaults to `10`
+* **initialDataCount :** How many items should Sloth render on initial load. Defaults to `20`
+* **loadCount :** How many items should the Sloth load on reaching the threshold (2/3 of the current list length). Defaults to `10`
 
-Since Sloth will watch the scroll event on a list container to lazy load the data, make sure you specify the height of the container. Sloth will generate a root container (`div`) with the id `slothScroll` by default. You can pass a class to set the container height:
+### On Scroll into the list
 
-```hbs
-{{#sloth-loader data=thatBigListofPosts initialDataCount=50 loadCount=20 class="post-container" as |sloth|}}
-  {{#each sloth.dataForCurrentView as |post|}}
-    {{pretty-post post=post}}
-  {{/each}}
-{{/sloth-loader}}
-```
-
-Alternatively, if you don't want Sloth to generate container, pass the tagName as `""` and make sure you create one manually with the `id` attribute as `slothScroll`:
+Since Sloth will watch the scroll event on a list container to lazy load the data, make sure you create a container manually with the `id` attribute as `slothScroll` and specify the definite height:
 
 ```hbs
-{{#sloth-loader tagName="" data=thatBigListofPosts initialDataCount=50 loadCount=20 as |sloth|}}
+{{!-- template.hbs --}}
+{{#sloth-loader 
+  data=thatBigListofPosts 
+  initialDataCount=50 
+  loadCount=20 
+  as |sloth|
+}}
+
   <div id="slothScroll" class="post-container"> {{!-- container --}}
     {{#each sloth.dataForCurrentView as |post|}}
       {{pretty-post post=post}}
     {{/each}}
   </div>
+
 {{/sloth-loader}}
 ```
 
-## Halp
-Let's work together to make **Sloth** awesome
+```css
+/* app.css */
+.post-container {
+  height: 75vh;
+}
+```
+
+**NOTE:** If your data should be load highly on demand (on scroll) like a facebook feed. This option will be the apt one. If you don't have a specific use case and the only requirement is to defer the loading of a bulk list to avoid janky pages, **you should definitely try the [background task](#Background) method** as it won't need any extra work from the host application side. 
+
+### Background Tasks
+
+This would be the most appropriate choice in most cases since it won't require any additional containers to create nor any style manipulations. The list will be loaded lazily on the window's `requestIdleCallback`. The event will be fired when the browser gets an idle relaxing time. It would be an appropriate time to load the remaining items onto the list. If the browser doesn't support `requestIdleCallback` then the data will be loaded using `setTimeout` with an interval time.
+
+To use this method, we need to pass two arguments:
+* `enableBackgroundLoad` : Defaults to `false`
+* `loadInterval`  : Denoted in `ms` and defaults to `200` (200ms). This serves two purposes:
+    1) When the browser supports `requestIdleCallback`, then `loadInterval` will be used as a threshold time. If the event is not fired within the given time, data loading will be triggered forcefully.
+    2) When the browser doesn't support `requestIdleCallback` and fell back to `setTimeout`, then this time will be used as a timeout for `setTimeout`.
+
+```hbs
+{{!-- template.hbs --}}
+
+{{#sloth-loader 
+  data=thatBigListofPosts 
+  initialDataCount=50 
+  loadCount=20 
+  enableBackgroundLoad=true
+  loadInterval=500
+  as |sloth|
+}}
+
+  {{#each sloth.dataForCurrentView as |post|}}
+    {{pretty-post post=post}}
+  {{/each}}
+
+{{/sloth-loader}}
+```
+
+## Haaalp
+Let's work together to make **Sloth** awesome.
+

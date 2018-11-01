@@ -1,0 +1,25 @@
+.post-container {
+  max-height: 50vh;
+  overflow: auto;
+  border: 1px solid #ddd;
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+.post-container div {
+  padding: 6px;
+}
+
+.sloth, .classic {
+  float: left;
+  width: 27%;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  margin: 1%;
+  padding: 1%;
+  box-shadow: 0 0 5px 2px #eee;
+}
+
+.count {
+  color: red;
+}
