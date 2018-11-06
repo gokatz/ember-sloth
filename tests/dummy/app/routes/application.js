@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model() {
     return window.fetch('https://jsonplaceholder.typicode.com/photos').then((response) => {
       if (response.ok) {
