@@ -5,7 +5,6 @@ const { computed, Component } = Ember;
 
 export default Component.extend({
   layout,
-  counter: 0,
   loadCount: 10,
   initialDataCount: 20,
   enableBackgroundLoad: false,
@@ -38,7 +37,6 @@ export default Component.extend({
     if (enableBackgroundLoad) {
       this.scheduleBackgroundLoad();
     } else {
-      
       let view = document.getElementById('slothScroll');
       this.boundedCheckScrollStatus = this.checkScrollStatus.bind(this);
       view.addEventListener('scroll', this.boundedCheckScrollStatus);  
@@ -108,11 +106,15 @@ export default Component.extend({
     }
   },
   
+  /* 
+    Getter will be called only on initail count calculation.
+    On further data lookup, the data will loade via action `loadMoreData`
+  */
   dataForCurrentView: computed({
     get() {
       let { data: entireData = [], initialDataCount } = this.getProperties('data', 'initialDataCount');
-      let newDataList = entireData.slice(0, initialDataCount);
-      return newDataList;
+      let initialDataList = entireData.slice(0, initialDataCount) || [];
+      return initialDataList;
     },
     set(key, value) {
       return value;
@@ -135,21 +137,15 @@ export default Component.extend({
       }
 
       let { 
-        counter, 
         data: entireData = [], 
         loadCount, 
         enableBackgroundLoad = false, 
         dataForCurrentView = [] 
-      } = this.getProperties('counter', 'data', 'loadCount', 'enableBackgroundLoad', 'dataForCurrentView');
+      } = this.getProperties('data', 'loadCount', 'enableBackgroundLoad', 'dataForCurrentView');
       
       let newDataSet = entireData.slice(0, dataForCurrentView.length + loadCount);
       
-      this.setProperties({
-        counter: counter + 1,
-        dataForCurrentView: newDataSet
-      });
-      
-      // this.set('counter', counter + 1);
+      this.set('dataForCurrentView', newDataSet);
 
       /*
         Need to stop the scroll listening since it will trigger unwanted updates.
