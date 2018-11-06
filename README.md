@@ -24,7 +24,7 @@ Additionally, you can pass `loadCount` and `initialDataCount` to customize the i
 
 ### On Scroll into the list
 
-Since Sloth will watch the scroll event on a list container to lazy load the data, make sure you create a container manually with the `id` attribute as `slothScroll` and specify the definite height:
+Since Sloth will watch the scroll event on a list container to lazy load the data, make sure you create a container manually with the `id` attribute as `slothScroll` (or anything of your choice) and specify the **definite height**. If your container has the id other than `slothScroll`, then pass the name of the id attribute (to bind action) as an argument, `scrollContainer`:
 
 ```hbs
 {{!-- template.hbs --}}
@@ -32,10 +32,11 @@ Since Sloth will watch the scroll event on a list container to lazy load the dat
   data=thatBigListofPosts 
   initialDataCount=50 
   loadCount=20 
+  scrollContainer="postContainer"
   as |sloth|
 }}
 
-  <div id="slothScroll" class="post-container"> {{!-- container --}}
+  <div id="postContainer" class="post-container"> {{!-- container --}}
     {{#each sloth.dataForCurrentView as |post|}}
       {{pretty-post post=post}}
     {{/each}}
