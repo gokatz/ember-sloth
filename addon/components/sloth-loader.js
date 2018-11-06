@@ -33,30 +33,27 @@ export default Component.extend({
 
   didInsertElement() {
     this._super(...arguments);
-    let { data = [], enableBackgroundLoad } = this.getProperties('data', 'enableBackgroundLoad')
     
-    // if there is no data passed, we should not bind any listeners or apply schedulers 
-    if (data.length < 1) {
+    // if there is no data passed, we should not bind any listeners or apply schedulers on initial render itself
+    if (this.getWithDefault('data', []).length < 1) {
       return;
     }
-    
-    if (enableBackgroundLoad) {
-      this.scheduleBackgroundLoad();
-    } else {
-      this.boundedCheckScrollStatus = this.checkScrollStatus.bind(this);
-      this._onScrollListener();
-    }
 
+    // to refer the bounded callback while on and off listeners
+    this.boundedCheckScrollStatus = this.checkScrollStatus.bind(this);
+    
+    this._bootListeners();
   },
 
   /*
-    will schedule data load using window requestIdleCallback (if available) or setTimeout
+    will schedule data load using 
+    window requestIdleCallback (if available) or setTimeout
   */
   scheduleBackgroundLoad() {
     let loadInterval = this.get('loadInterval');
   
     /*
-      requestIdleCallback will not be fired automatically when the tab is out of focus. 
+      NOTE: requestIdleCallback will not be fired automatically when the tab is out of focus. 
       On that case, timeout will come into play.
     */
 
@@ -82,29 +79,7 @@ export default Component.extend({
 
   didRender() {
     this._super(...arguments);
-    
-    let {
-      data = [],
-      enableBackgroundLoad = false,
-      dataForCurrentView = []
-    } = this.getProperties('data', 'enableBackgroundLoad', 'dataForCurrentView');
-    
-    let isDoneRenderingList = dataForCurrentView.length === data.length;
-    
-    if (enableBackgroundLoad) {
-    
-      if (!isDoneRenderingList) {
-        this.scheduleBackgroundLoad();
-      }
-    
-    } else {
-      
-      if (isDoneRenderingList) {
-        this._offScrollListener();
-        return;
-      }
-      this._onScrollListener();
-    }
+    this._bootListeners();
   },
   
   checkScrollStatus() {
@@ -130,6 +105,14 @@ export default Component.extend({
     }
   }),
 
+  _bootListeners() {
+    if (this.get('enableBackgroundLoad')) {
+      this.scheduleBackgroundLoad();
+    } else {
+      this._onScrollListener();
+    }
+  },
+
   // listener controls
   _offScrollListener() {
     let { enableBackgroundLoad, _scrollElement } = this.getProperties('enableBackgroundLoad', '_scrollElement');
@@ -146,7 +129,7 @@ export default Component.extend({
   },
 
 
-  // remove any binded listeners on destroy
+  // remove any bounded listeners on destroy
   willDestroyElement() {
     this._offScrollListener(); 
     this._super(...arguments);
@@ -154,23 +137,28 @@ export default Component.extend({
 
   actions: {
     loadMoreData() {
-
-      if (this.get('isDestroyed')) {
-        return;
-      }
-
+      
       let { 
         data: entireData = [], 
         loadCount, 
-        dataForCurrentView = [] 
-      } = this.getProperties('data', 'loadCount', 'dataForCurrentView');
+        dataForCurrentView = [] ,
+        isDestroyed
+      } = this.getProperties('data', 'loadCount', 'dataForCurrentView', 'isDestroyed');
       
+      let isDoneRenderingList = dataForCurrentView.length === entireData.length;
+      
+      if (isDestroyed || isDoneRenderingList) {
+        return;
+      }      
+
       let newDataSet = entireData.slice(0, dataForCurrentView.length + loadCount);
       
       this.set('dataForCurrentView', newDataSet);
 
       /*
-        Need to stop the scroll listening since it will trigger unwanted updates.
+        Need to stop the scroll listening until the current data set renders completely
+        since it will trigger unwanted updates.
+        
         The scroll event will again be attached on `didRender` hook
       */
       this._offScrollListener();
