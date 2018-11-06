@@ -5,7 +5,7 @@ const { computed, Component } = Ember;
 
 export default Component.extend({
   layout,
-  counter: 1,
+  counter: 0,
   loadCount: 10,
   initialDataCount: 20,
   enableBackgroundLoad: false,
@@ -30,7 +30,7 @@ export default Component.extend({
     this._super(...arguments);
     let { data = [], enableBackgroundLoad } = this.getProperties('data', 'enableBackgroundLoad')
     
-    // if there is no data passed, we should not bind any listeners or schedulers 
+    // if there is no data passed, we should not bind any listeners or apply schedulers 
     if (data.length < 1) {
       return;
     }
@@ -40,8 +40,8 @@ export default Component.extend({
     } else {
       
       let view = document.getElementById('slothScroll');
-      $(view).on('scroll', this.checkScrollStatus.bind(this));
-      //view.addEventListener('scroll', this.checkScrollStatus.bind(this));  
+      this.boundedCheckScrollStatus = this.checkScrollStatus.bind(this);
+      view.addEventListener('scroll', this.boundedCheckScrollStatus);  
     }
 
   },
@@ -93,17 +93,16 @@ export default Component.extend({
       
       let view = document.getElementById('slothScroll');
       if (isDoneRenderingList) {
-        $(view).off('scroll');
+        view.removeEventListener('scroll', this.boundedCheckScrollStatus);  
         return;
       }
-      $(view).on('scroll', this.checkScrollStatus.bind(this));
-    
+      view.addEventListener('scroll', this.boundedCheckScrollStatus);      
     }
   },
   
   checkScrollStatus() {
     let view = document.getElementById('slothScroll');
-    // start to load data on 3/2 scroll
+    // start to load data on 2/3 scroll
     if (view.scrollTop > (view.scrollHeight / 3) * 2) {
       this.send('loadMoreData');
     }
@@ -123,7 +122,7 @@ export default Component.extend({
   // remove any binded listeners on destroy
   willDestroyElement() {
     let view = document.getElementById('slothScroll');
-    $(view).off('scroll');
+    view.removeEventListener('scroll', this.boundedCheckScrollStatus);  
     
     this._super(...arguments);
   },
@@ -135,20 +134,30 @@ export default Component.extend({
         return;
       }
 
-      let { counter, data: entireData = [], loadCount, enableBackgroundLoad = false } = this.getProperties('counter', 'data', 'loadCount', 'enableBackgroundLoad');
-      let newDataSet = entireData.slice(0, loadCount * (counter + 1));
+      let { 
+        counter, 
+        data: entireData = [], 
+        loadCount, 
+        enableBackgroundLoad = false, 
+        dataForCurrentView = [] 
+      } = this.getProperties('counter', 'data', 'loadCount', 'enableBackgroundLoad', 'dataForCurrentView');
+      
+      let newDataSet = entireData.slice(0, dataForCurrentView.length + loadCount);
+      
       this.setProperties({
         counter: counter + 1,
         dataForCurrentView: newDataSet
       });
       
+      // this.set('counter', counter + 1);
+
       /*
         Need to stop the scroll listening since it will trigger unwanted updates.
         The scroll event will again be attached on `didRender` hook
       */
       if (!enableBackgroundLoad) {
         let view = document.getElementById('slothScroll');
-        $(view).off('scroll'); 
+        view.removeEventListener('scroll', this.boundedCheckScrollStatus);  
       }
     }
   }
