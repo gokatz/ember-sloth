@@ -5,11 +5,17 @@ const { computed, Component } = Ember;
 
 export default Component.extend({
   layout,
-  counter: 1,
   loadCount: 10,
   initialDataCount: 20,
   enableBackgroundLoad: false,
   loadInterval: 200, // 200 ms
+  scrollContainer: 'slothScroll',
+
+  _scrollElement: computed('scrollContainer', function() {
+    let scrollContainer = this.get('scrollContainer');
+    // refering document here as the container need not to be inside this loader
+    return document.getElementById(scrollContainer);
+  }),
 
   /*
   
@@ -28,37 +34,32 @@ export default Component.extend({
 
   didInsertElement() {
     this._super(...arguments);
-    let { data = [], enableBackgroundLoad } = this.getProperties('data', 'enableBackgroundLoad')
     
-    // if there is no data passed, we should not bind any listeners or schedulers 
-    if (data.length < 1) {
+    // if there is no data passed, we should not bind any listeners or apply schedulers on initial render itself
+    if (this.getWithDefault('data', []).length < 1) {
       return;
     }
-    
-    if (enableBackgroundLoad) {
-      this.scheduleBackgroundLoad();
-    } else {
-      
-      let view = document.getElementById('slothScroll');
-      $(view).on('scroll', this.checkScrollStatus.bind(this));
-      //view.addEventListener('scroll', this.checkScrollStatus.bind(this));  
-    }
 
+    // to refer the bounded callback while on and off listeners
+    this.boundedCheckScrollStatus = this.checkScrollStatus.bind(this);
+    
+    this._bootListeners();
   },
 
   /*
-    will schedule data load using window requestIdleCallback (if available) or setTimeout
+    will schedule data load using 
+    window requestIdleCallback (if available) or setTimeout
   */
   scheduleBackgroundLoad() {
     let loadInterval = this.get('loadInterval');
   
     /*
-      requestIdleCallback will not be fired automatically when the tab is out of focus. 
+      NOTE: requestIdleCallback will not be fired automatically when the tab is out of focus. 
       On that case, timeout will come into play.
     */
 
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(() => {
+      window.requestIdleCallback(() => {        
         this.send('loadMoreData')
       }, { 
         /* 
@@ -79,77 +80,92 @@ export default Component.extend({
 
   didRender() {
     this._super(...arguments);
-    
-    let { data = [], enableBackgroundLoad = false, dataForCurrentView = [] } = this.getProperties('data', 'enableBackgroundLoad', 'dataForCurrentView');
-    let isDoneRenderingList = dataForCurrentView.length === data.length;
-    
-    if (enableBackgroundLoad) {
-    
-      if (!isDoneRenderingList) {
-        this.scheduleBackgroundLoad();
-      }
-    
-    } else {
-      
-      let view = document.getElementById('slothScroll');
-      if (isDoneRenderingList) {
-        $(view).off('scroll');
-        return;
-      }
-      $(view).on('scroll', this.checkScrollStatus.bind(this));
-    
-    }
+    this._bootListeners();
   },
   
   checkScrollStatus() {
-    let view = document.getElementById('slothScroll');
-    // start to load data on 3/2 scroll
-    if (view.scrollTop > (view.scrollHeight / 3) * 2) {
+    let scrollElement = this.get('_scrollElement');
+    // start to load data on 2/3 scroll
+    if (scrollElement.scrollTop > (scrollElement.scrollHeight / 3) * 2) {
       this.send('loadMoreData');
     }
   },
   
+  /* 
+    Getter will be called only on initail count calculation.
+    On further data lookup, the data will loade via action `loadMoreData`
+  */
   dataForCurrentView: computed({
     get() {
       let { data: entireData = [], initialDataCount } = this.getProperties('data', 'initialDataCount');
-      let newDataList = entireData.slice(0, initialDataCount);
-      return newDataList;
+      let initialDataList = entireData.slice(0, initialDataCount) || [];
+      return initialDataList;
     },
     set(key, value) {
       return value;
     }
   }),
 
-  // remove any binded listeners on destroy
+  _bootListeners() {
+    if (this.get('enableBackgroundLoad')) {
+      this.scheduleBackgroundLoad();
+    } else {
+      this._onScrollListener();
+    }
+  },
+
+  // scroll listener controls
+  _offScrollListener() {
+    let { enableBackgroundLoad, _scrollElement } = this.getProperties('enableBackgroundLoad', '_scrollElement');
+    if (!enableBackgroundLoad) {
+      _scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);    
+    }
+  },
+
+  _onScrollListener() {
+    let { isDestroyed, _scrollElement } = this.getProperties('isDestroyed', '_scrollElement');
+    if (!isDestroyed) {
+      _scrollElement.addEventListener('scroll', this.boundedCheckScrollStatus);    
+    }
+  },
+
+
+  /* 
+    Remove any bounded listeners on destroy
+    * Removing only scroll listeners as requestIdleCallback and setTimeout will be called only once 
+  */
   willDestroyElement() {
-    let view = document.getElementById('slothScroll');
-    $(view).off('scroll');
-    
+    this._offScrollListener(); 
     this._super(...arguments);
   },
 
   actions: {
     loadMoreData() {
-
-      if (this.get('isDestroyed')) {
-        return;
-      }
-
-      let { counter, data: entireData = [], loadCount, enableBackgroundLoad = false } = this.getProperties('counter', 'data', 'loadCount', 'enableBackgroundLoad');
-      let newDataSet = entireData.slice(0, loadCount * (counter + 1));
-      this.setProperties({
-        counter: counter + 1,
-        dataForCurrentView: newDataSet
-      });
       
+      let { 
+        data: entireData = [], 
+        loadCount, 
+        dataForCurrentView = [] ,
+        isDestroyed
+      } = this.getProperties('data', 'loadCount', 'dataForCurrentView', 'isDestroyed');
+      
+      let isDoneRenderingList = dataForCurrentView.length === entireData.length;
+      
+      if (isDestroyed || isDoneRenderingList) {
+        return;
+      }      
+
+      let newDataSet = entireData.slice(0, dataForCurrentView.length + loadCount);
+      
+      this.set('dataForCurrentView', newDataSet);
+
       /*
-        Need to stop the scroll listening since it will trigger unwanted updates.
+        Need to stop the scroll listening until the current data set renders completely
+        since it will trigger unwanted updates.
+        
         The scroll event will again be attached on `didRender` hook
       */
-      if (!enableBackgroundLoad) {
-        let view = document.getElementById('slothScroll');
-        $(view).off('scroll'); 
-      }
+      this._offScrollListener();
     }
   }
 });
