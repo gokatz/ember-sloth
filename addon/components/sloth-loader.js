@@ -8,11 +8,12 @@ export default Component.extend({
   loadCount: 10,
   initialDataCount: 20,
   enableBackgroundLoad: false,
-  loadInterval: 200, // 200 ms,
+  loadInterval: 200, // 200 ms
   scrollContainer: 'slothScroll',
 
   _scrollElement: computed('scrollContainer', function() {
     let scrollContainer = this.get('scrollContainer');
+    // refering document here as the container need not to be inside this loader
     return document.getElementById(scrollContainer);
   }),
 
@@ -58,7 +59,7 @@ export default Component.extend({
     */
 
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(() => {
+      window.requestIdleCallback(() => {        
         this.send('loadMoreData')
       }, { 
         /* 
@@ -113,7 +114,7 @@ export default Component.extend({
     }
   },
 
-  // listener controls
+  // scroll listener controls
   _offScrollListener() {
     let { enableBackgroundLoad, _scrollElement } = this.getProperties('enableBackgroundLoad', '_scrollElement');
     if (!enableBackgroundLoad) {
@@ -129,7 +130,10 @@ export default Component.extend({
   },
 
 
-  // remove any bounded listeners on destroy
+  /* 
+    Remove any bounded listeners on destroy
+    * Removing only scroll listeners as requestIdleCallback and setTimeout will be called only once 
+  */
   willDestroyElement() {
     this._offScrollListener(); 
     this._super(...arguments);
