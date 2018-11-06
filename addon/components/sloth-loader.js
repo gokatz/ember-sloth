@@ -43,9 +43,8 @@ export default Component.extend({
     if (enableBackgroundLoad) {
       this.scheduleBackgroundLoad();
     } else {
-      let scrollElement = this.get('_scrollElement');
       this.boundedCheckScrollStatus = this.checkScrollStatus.bind(this);
-      scrollElement.addEventListener('scroll', this.boundedCheckScrollStatus);  
+      this._onScrollListener();
     }
 
   },
@@ -100,12 +99,11 @@ export default Component.extend({
     
     } else {
       
-      let scrollElement = this.get('_scrollElement');
       if (isDoneRenderingList) {
-        scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);  
+        this._offScrollListener();
         return;
       }
-      scrollElement.addEventListener('scroll', this.boundedCheckScrollStatus);      
+      this._onScrollListener();
     }
   },
   
@@ -132,11 +130,25 @@ export default Component.extend({
     }
   }),
 
+  // listener controls
+  _offScrollListener() {
+    let { enableBackgroundLoad, _scrollElement } = this.getProperties('enableBackgroundLoad', '_scrollElement');
+    if (!enableBackgroundLoad) {
+      _scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);    
+    }
+  },
+
+  _onScrollListener() {
+    let { isDestroyed, _scrollElement } = this.getProperties('isDestroyed', '_scrollElement');
+    if (!isDestroyed) {
+      _scrollElement.addEventListener('scroll', this.boundedCheckScrollStatus);    
+    }
+  },
+
+
   // remove any binded listeners on destroy
   willDestroyElement() {
-    let scrollElement = this.get('_scrollElement');
-    scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);  
-    
+    this._offScrollListener(); 
     this._super(...arguments);
   },
 
@@ -150,9 +162,8 @@ export default Component.extend({
       let { 
         data: entireData = [], 
         loadCount, 
-        enableBackgroundLoad = false, 
         dataForCurrentView = [] 
-      } = this.getProperties('data', 'loadCount', 'enableBackgroundLoad', 'dataForCurrentView');
+      } = this.getProperties('data', 'loadCount', 'dataForCurrentView');
       
       let newDataSet = entireData.slice(0, dataForCurrentView.length + loadCount);
       
@@ -162,10 +173,7 @@ export default Component.extend({
         Need to stop the scroll listening since it will trigger unwanted updates.
         The scroll event will again be attached on `didRender` hook
       */
-      if (!enableBackgroundLoad) {
-        let scrollElement = this.get('_scrollElement');
-        scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);  
-      }
+      this._offScrollListener();
     }
   }
 });
