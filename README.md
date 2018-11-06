@@ -84,5 +84,7 @@ To use this method, we need to pass two arguments:
 ```
 
 ## Haaalp
-Let's work together to make **Sloth** awesome.
+Let's work together to make **Sloth** awesome:
+* Sloth has zero test. Need help in writing sophisticated tests.
+* Exploring `Intersection Observer API` for data load
 
