@@ -8,7 +8,13 @@ export default Component.extend({
   loadCount: 10,
   initialDataCount: 20,
   enableBackgroundLoad: false,
-  loadInterval: 200, // 200 ms
+  loadInterval: 200, // 200 ms,
+  scrollContainer: 'slothScroll',
+
+  _scrollElement: computed('scrollContainer', function() {
+    let scrollContainer = this.get('scrollContainer');
+    return document.getElementById(scrollContainer);
+  }),
 
   /*
   
@@ -37,9 +43,9 @@ export default Component.extend({
     if (enableBackgroundLoad) {
       this.scheduleBackgroundLoad();
     } else {
-      let view = document.getElementById('slothScroll');
+      let scrollElement = this.get('_scrollElement');
       this.boundedCheckScrollStatus = this.checkScrollStatus.bind(this);
-      view.addEventListener('scroll', this.boundedCheckScrollStatus);  
+      scrollElement.addEventListener('scroll', this.boundedCheckScrollStatus);  
     }
 
   },
@@ -78,7 +84,12 @@ export default Component.extend({
   didRender() {
     this._super(...arguments);
     
-    let { data = [], enableBackgroundLoad = false, dataForCurrentView = [] } = this.getProperties('data', 'enableBackgroundLoad', 'dataForCurrentView');
+    let {
+      data = [],
+      enableBackgroundLoad = false,
+      dataForCurrentView = []
+    } = this.getProperties('data', 'enableBackgroundLoad', 'dataForCurrentView');
+    
     let isDoneRenderingList = dataForCurrentView.length === data.length;
     
     if (enableBackgroundLoad) {
@@ -89,19 +100,19 @@ export default Component.extend({
     
     } else {
       
-      let view = document.getElementById('slothScroll');
+      let scrollElement = this.get('_scrollElement');
       if (isDoneRenderingList) {
-        view.removeEventListener('scroll', this.boundedCheckScrollStatus);  
+        scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);  
         return;
       }
-      view.addEventListener('scroll', this.boundedCheckScrollStatus);      
+      scrollElement.addEventListener('scroll', this.boundedCheckScrollStatus);      
     }
   },
   
   checkScrollStatus() {
-    let view = document.getElementById('slothScroll');
+    let scrollElement = this.get('_scrollElement');
     // start to load data on 2/3 scroll
-    if (view.scrollTop > (view.scrollHeight / 3) * 2) {
+    if (scrollElement.scrollTop > (scrollElement.scrollHeight / 3) * 2) {
       this.send('loadMoreData');
     }
   },
@@ -123,8 +134,8 @@ export default Component.extend({
 
   // remove any binded listeners on destroy
   willDestroyElement() {
-    let view = document.getElementById('slothScroll');
-    view.removeEventListener('scroll', this.boundedCheckScrollStatus);  
+    let scrollElement = this.get('_scrollElement');
+    scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);  
     
     this._super(...arguments);
   },
@@ -152,8 +163,8 @@ export default Component.extend({
         The scroll event will again be attached on `didRender` hook
       */
       if (!enableBackgroundLoad) {
-        let view = document.getElementById('slothScroll');
-        view.removeEventListener('scroll', this.boundedCheckScrollStatus);  
+        let scrollElement = this.get('_scrollElement');
+        scrollElement.removeEventListener('scroll', this.boundedCheckScrollStatus);  
       }
     }
   }
