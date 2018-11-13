@@ -60,7 +60,7 @@ export default Component.extend({
 
     if ('requestIdleCallback' in window) {
       window.requestIdleCallback(() => {        
-        this.send('loadMoreData')
+        this._loadMoreData();
       }, { 
         /* 
           if requestIdleCallback is not fired withing the given `loadInterval`
@@ -74,7 +74,7 @@ export default Component.extend({
 
     // fallback to setTimeout
     setTimeout(() => {
-      this.send('loadMoreData')
+      this._loadMoreData();
     }, loadInterval);
   },
 
@@ -87,7 +87,7 @@ export default Component.extend({
     let scrollElement = this.get('_scrollElement');
     // start to load data on 2/3 scroll
     if (scrollElement.scrollTop > (scrollElement.scrollHeight / 3) * 2) {
-      this.send('loadMoreData');
+      this._loadMoreData();
     }
   },
   
@@ -139,6 +139,12 @@ export default Component.extend({
     this._super(...arguments);
   },
 
+  _loadMoreData() {
+    if (!this.get('isDestroyed')) {
+      this.send('loadMoreData')
+    }
+  },
+
   actions: {
     loadMoreData() {
       
@@ -146,12 +152,11 @@ export default Component.extend({
         data: entireData = [], 
         loadCount, 
         dataForCurrentView = [] ,
-        isDestroyed
-      } = this.getProperties('data', 'loadCount', 'dataForCurrentView', 'isDestroyed');
+      } = this.getProperties('data', 'loadCount', 'dataForCurrentView');
       
       let isDoneRenderingList = dataForCurrentView.length === entireData.length;
       
-      if (isDestroyed || isDoneRenderingList) {
+      if (isDoneRenderingList) {
         return;
       }      
 
