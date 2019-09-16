@@ -95,7 +95,7 @@ export default Component.extend({
     Getter will be called only on initail count calculation.
     On further data lookup, the data will loade via action `loadMoreData`
   */
-  dataForCurrentView: computed({
+  dataForCurrentView: computed('data', 'initialDataCount', {
     get() {
       let { data: entireData = [], initialDataCount } = this.getProperties('data', 'initialDataCount');
       let initialDataList = entireData.slice(0, initialDataCount) || [];
