@@ -1,6 +1,6 @@
 {
   "name": "ember-sloth",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Synchronous lazy loader to load big list any or kind of that! In Ember Land",
   "keywords": [
     "ember-addon"
