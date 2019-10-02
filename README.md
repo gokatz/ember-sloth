@@ -9,8 +9,8 @@ Sloth will help you to load a huge list lazily. You can lazy load your data usin
 
 Perfectly lightweight - [130B Min + GZip](https://bundlephobia.com/result?p=ember-sloth@0.0.2). Play around with the [demo](https://ember-sloth.netlify.com/)
 
-## Why Sloth?
 
+## Why Sloth?
 Sloth is meant for his slowness. Is that the reason? No, the reason is, we are going to make him a lot faster 😉 
 
 ## Usage
@@ -88,3 +88,8 @@ Let's work together to make **Sloth** awesome:
 * Sloth has zero test. Need help in writing sophisticated tests.
 * Exploring `Intersection Observer API` for data load
 
+
+License
+------------------------------------------------------------------------------
+
+This project is licensed under the [MIT License](LICENSE.md).
