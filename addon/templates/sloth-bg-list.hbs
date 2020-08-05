@@ -1,0 +1,32 @@
+
+<div class="sloth">
+  <h3>
+    Sloth Loader (background fetch) &nbsp;
+    <button {{action "toggle" "autosloth"}}>{{if canShowAutoSloth "Hide" "Show"}}</button>
+  </h3>
+
+  {{#if canShowAutoSloth}}
+
+    {{#sloth-loader
+      tagName=""
+      data=model
+      initialDataCount=50
+      loadCount=20
+      loadInterval=3000
+      enableBackgroundLoad=true
+      as |sloth|
+    }}
+
+      Data Loaded: <span class="count"> {{sloth.dataForCurrentView.length}} </span>
+
+      <div class="post-container"> {{!-- container --}}
+        {{#each sloth.dataForCurrentView as |post|}}
+          <div>
+            {{post.id}}: {{post.title}}
+          </div>
+        {{/each}}
+      </div>
+    {{/sloth-loader}}
+
+  {{/if}}
+</div>

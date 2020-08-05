@@ -2,11 +2,14 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   model() {
-    return window.fetch('https://jsonplaceholder.typicode.com/photos').then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-    })
+    let data = []
+    for(let i = 0; i < 5000; i++) {
+      data.push({
+        id: i,
+        title: `Title for ${i}`
+      });
+    }
+    return data;
   },
 
   actions: {

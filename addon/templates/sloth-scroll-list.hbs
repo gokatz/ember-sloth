@@ -1,0 +1,27 @@
+<div class="sloth">
+  <h3>
+    Sloth Loader &nbsp;   <button {{action "toggle" "sloth"}}>{{if canShowSloth "Hide" "Show"}}</button>
+  </h3>
+
+  {{#if canShowSloth}}
+
+    {{#sloth-loader
+      data=model
+      initialDataCount=3
+      loadCount=40
+      as |sloth|
+    }}
+
+      Data Loaded: <span class="count"> {{sloth.dataForCurrentView.length}} </span>
+
+      <div id="slothScroll" class="post-container">
+        {{#each sloth.dataForCurrentView as |post|}}
+          <div style="height: 100px;">
+            {{post.id}}: {{post.title}}
+          </div>
+        {{/each}}
+      </div>
+    {{/sloth-loader}}
+
+  {{/if}}
+</div>

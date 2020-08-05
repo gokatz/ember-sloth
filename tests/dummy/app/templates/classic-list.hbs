@@ -1,0 +1,21 @@
+<div class="classic">
+
+  <h3>
+    Classic Loader &nbsp; <button {{action "toggle" "classic"}}>{{if canShowClassic "Hide" "Show"}}</button>
+
+  </h3>
+
+  {{#if canShowClassic}}
+
+    Data Loaded: <span class="count"> {{model.length}}  </span>
+
+    <div class="post-container">
+      {{#each model as |post|}}
+        <div>
+          {{post.id}}: {{post.title}}
+        </div>
+      {{/each}}
+    </div>
+  {{/if}}
+
+</div>
